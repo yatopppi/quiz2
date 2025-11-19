@@ -16,8 +16,6 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response) 
         if ("login".equals(action)) {
             String user = request.getParameter("username");
             String pass = request.getParameter("password");
-
-            // UPDATED QUERY: Select 'username' as well as 'id'
             try (Connection conn = DBUtil.getConnection();
                  PreparedStatement ps = conn.prepareStatement("SELECT id, username FROM users WHERE username = ? AND password = ?")) {
                 
@@ -28,8 +26,6 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response) 
                 if (rs.next()) {
                     HttpSession session = request.getSession();
                     session.setAttribute("userId", rs.getInt("id"));
-                    
-                    // NEW: Save username to session so we can show it in the sidebar
                     session.setAttribute("username", rs.getString("username"));
                     
                     response.sendRedirect("tasks");
@@ -40,10 +36,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response) 
                 e.printStackTrace();
                 response.sendRedirect("login.jsp?error=db");
             }
-
-        // ... (Keep the rest of the register logic exactly the same) ...
         } else if ("register".equals(action)) {
-             // ... (Your existing register code) ...
              String user = request.getParameter("username");
              String pass = request.getParameter("password");
 

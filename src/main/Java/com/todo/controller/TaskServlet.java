@@ -30,7 +30,6 @@ public class TaskServlet extends HttpServlet {
         List<Map<String, Object>> categories = new ArrayList<>();
 
         try (Connection conn = DBUtil.getConnection()) {
-            // 1. Fetch Categories
             try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM categories WHERE user_id = ?")) {
                 ps.setInt(1, userId);
                 ResultSet rs = ps.executeQuery();
@@ -42,7 +41,6 @@ public class TaskServlet extends HttpServlet {
                 }
             }
 
-            // 2. Fetch Tasks (UPDATED to include category_id)
             String finalSql = "SELECT * FROM tasks WHERE user_id = ?";
             if (selectedCategoryId != null) finalSql += " AND category_id = ?";
             
@@ -56,7 +54,6 @@ public class TaskServlet extends HttpServlet {
                     task.put("id", rs.getInt("id"));
                     task.put("title", rs.getString("title"));
                     task.put("isCompleted", rs.getBoolean("is_completed"));
-                    // CRITICAL: Pass the current category ID to the JSP
                     task.put("categoryId", rs.getObject("category_id")); 
                     tasks.add(task);
                 }
@@ -82,13 +79,11 @@ public class TaskServlet extends HttpServlet {
 
         String action = request.getParameter("action");
         String redirectUrl = "tasks"; 
-        // Preserve current view
         String currentCat = request.getParameter("currentCat");
         if(currentCat != null && !currentCat.isEmpty()) redirectUrl += "?category=" + currentCat;
 
         try (Connection conn = DBUtil.getConnection()) {
             if ("add".equals(action)) {
-                // Add Task Logic
                 String title = request.getParameter("title");
                 String catId = request.getParameter("categoryId");
                 PreparedStatement ps = conn.prepareStatement("INSERT INTO tasks (title, user_id, category_id) VALUES (?, ?, ?)");
@@ -99,7 +94,6 @@ public class TaskServlet extends HttpServlet {
                 ps.executeUpdate();
 
             } else if ("delete".equals(action)) {
-                // Delete Task Logic
                 int id = Integer.parseInt(request.getParameter("id"));
                 PreparedStatement ps = conn.prepareStatement("DELETE FROM tasks WHERE id = ? AND user_id = ?");
                 ps.setInt(1, id);
@@ -107,7 +101,6 @@ public class TaskServlet extends HttpServlet {
                 ps.executeUpdate();
 
             } else if ("toggle".equals(action)) {
-                // Toggle Checkbox Logic
                 int id = Integer.parseInt(request.getParameter("id"));
                 PreparedStatement ps = conn.prepareStatement("UPDATE tasks SET is_completed = NOT is_completed WHERE id = ? AND user_id = ?");
                 ps.setInt(1, id);
@@ -115,7 +108,6 @@ public class TaskServlet extends HttpServlet {
                 ps.executeUpdate();
 
             } else if ("addCategory".equals(action)) {
-                // Add Category Logic
                 String name = request.getParameter("categoryName");
                 PreparedStatement ps = conn.prepareStatement("INSERT INTO categories (name, user_id) VALUES (?, ?)");
                 ps.setString(1, name);
@@ -123,7 +115,6 @@ public class TaskServlet extends HttpServlet {
                 ps.executeUpdate();
                 
             } else if ("deleteCategory".equals(action)) {
-                // Delete Category Logic
                 int catId = Integer.parseInt(request.getParameter("id"));
                 PreparedStatement unlink = conn.prepareStatement("UPDATE tasks SET category_id = NULL WHERE category_id = ? AND user_id = ?");
                 unlink.setInt(1, catId);
@@ -134,7 +125,7 @@ public class TaskServlet extends HttpServlet {
                 del.setInt(1, catId);
                 del.setInt(2, userId);
                 del.executeUpdate();
-                redirectUrl = "tasks"; // Must reset to "All tasks" view
+                redirectUrl = "tasks";
                 
             } else if ("updateCategory".equals(action)) {
                 // --- NEW FEATURE: Re-assign Category ---
@@ -144,9 +135,9 @@ public class TaskServlet extends HttpServlet {
                 PreparedStatement ps = conn.prepareStatement("UPDATE tasks SET category_id = ? WHERE id = ? AND user_id = ?");
                 
                 if (newCatId != null && !newCatId.isEmpty()) {
-                    ps.setInt(1, Integer.parseInt(newCatId)); // Assign
+                    ps.setInt(1, Integer.parseInt(newCatId)); 
                 } else {
-                    ps.setNull(1, java.sql.Types.INTEGER); // Remove (Uncategorized)
+                    ps.setNull(1, java.sql.Types.INTEGER); 
                 }
                 
                 ps.setInt(2, id);

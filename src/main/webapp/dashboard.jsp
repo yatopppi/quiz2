@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600&family=Lora:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
     
     <style>
-        /* Theme Variables */
         :root {
             --bg-beige: #F5F2EB;
             --text-dark: #2D332F;
@@ -20,12 +19,8 @@
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Transitions for instant checklist */
         .task-text { transition: color 0.2s ease, text-decoration 0.2s ease; }
         .check-btn { transition: background-color 0.2s ease, border-color 0.2s ease; }
-        
-        /* Modal classes */
         .hidden { display: none; }
     </style>
 </head>
@@ -189,26 +184,20 @@
     </div>
 
     <script>
-        // 1. Instant Task Toggle (AJAX)
         function toggleTask(id) {
-            // Select Elements
             const btn = document.getElementById('btn-' + id);
             const icon = document.getElementById('icon-' + id);
             const text = document.getElementById('text-' + id);
             
-            // Determine current state (is it completed?)
-            const isCompleted = icon.classList.contains('hidden'); // If hidden, it was NOT completed. Now we complete it.
+            const isCompleted = icon.classList.contains('hidden');
             
-            // Optimistic UI Update (Change looks immediately)
             if (isCompleted) {
-                // Mark as Done
                 btn.classList.remove('border-gray-300', 'hover:border-[#4A5D50]');
                 btn.classList.add('bg-[#4A5D50]', 'border-[#4A5D50]');
                 icon.classList.remove('hidden');
                 text.classList.remove('text-[#2D332F]');
                 text.classList.add('text-gray-400', 'line-through', 'decoration-gray-300');
             } else {
-                // Mark as Undone
                 btn.classList.remove('bg-[#4A5D50]', 'border-[#4A5D50]');
                 btn.classList.add('border-gray-300', 'hover:border-[#4A5D50]');
                 icon.classList.add('hidden');
@@ -216,7 +205,6 @@
                 text.classList.add('text-[#2D332F]');
             }
 
-            // Send Background Request
             fetch('tasks', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -224,7 +212,6 @@
             }).catch(err => console.error('Error:', err));
         }
 
-        // 2. Modal Logic
         const backdrop = document.getElementById('modalBackdrop');
         const card = document.getElementById('modalCard');
         const input = document.getElementById('modalInput');
