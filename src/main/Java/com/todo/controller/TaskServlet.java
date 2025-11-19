@@ -1,6 +1,6 @@
 package com.todo.controller;
 
-import com.todo.util.DBUtil;
+import com.todo.util.Database; // <--- UPDATED IMPORT
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -29,7 +29,9 @@ public class TaskServlet extends HttpServlet {
         List<Map<String, Object>> tasks = new ArrayList<>();
         List<Map<String, Object>> categories = new ArrayList<>();
 
-        try (Connection conn = DBUtil.getConnection()) {
+        try (Connection conn = Database.getConnection()) { // Use Database.getConnection()
+            
+            // Fetch Categories
             try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM categories WHERE user_id = ?")) {
                 ps.setInt(1, userId);
                 ResultSet rs = ps.executeQuery();
@@ -41,6 +43,7 @@ public class TaskServlet extends HttpServlet {
                 }
             }
 
+            // Fetch Tasks
             String finalSql = "SELECT * FROM tasks WHERE user_id = ?";
             if (selectedCategoryId != null) finalSql += " AND category_id = ?";
             
@@ -82,7 +85,8 @@ public class TaskServlet extends HttpServlet {
         String currentCat = request.getParameter("currentCat");
         if(currentCat != null && !currentCat.isEmpty()) redirectUrl += "?category=" + currentCat;
 
-        try (Connection conn = DBUtil.getConnection()) {
+        try (Connection conn = Database.getConnection()) { // Use Database.getConnection()
+            
             if ("add".equals(action)) {
                 String title = request.getParameter("title");
                 String catId = request.getParameter("categoryId");
@@ -120,7 +124,6 @@ public class TaskServlet extends HttpServlet {
                 unlink.setInt(1, catId);
                 unlink.setInt(2, userId);
                 unlink.executeUpdate();
-
                 PreparedStatement del = conn.prepareStatement("DELETE FROM categories WHERE id = ? AND user_id = ?");
                 del.setInt(1, catId);
                 del.setInt(2, userId);
@@ -128,18 +131,14 @@ public class TaskServlet extends HttpServlet {
                 redirectUrl = "tasks";
                 
             } else if ("updateCategory".equals(action)) {
-                // --- NEW FEATURE: Re-assign Category ---
                 int id = Integer.parseInt(request.getParameter("id"));
                 String newCatId = request.getParameter("newCategoryId");
-
                 PreparedStatement ps = conn.prepareStatement("UPDATE tasks SET category_id = ? WHERE id = ? AND user_id = ?");
-                
                 if (newCatId != null && !newCatId.isEmpty()) {
-                    ps.setInt(1, Integer.parseInt(newCatId)); 
+                    ps.setInt(1, Integer.parseInt(newCatId));
                 } else {
-                    ps.setNull(1, java.sql.Types.INTEGER); 
+                    ps.setNull(1, java.sql.Types.INTEGER);
                 }
-                
                 ps.setInt(2, id);
                 ps.setInt(3, userId);
                 ps.executeUpdate();

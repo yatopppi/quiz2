@@ -1,6 +1,6 @@
 package com.todo.controller;
 
-import com.todo.util.DBUtil;
+import com.todo.util.Database; // <--- UPDATED IMPORT
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -10,13 +10,15 @@ import java.sql.*;
 @WebServlet("/auth")
 public class AuthServlet extends HttpServlet {
 
-protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
 
         if ("login".equals(action)) {
             String user = request.getParameter("username");
             String pass = request.getParameter("password");
-            try (Connection conn = DBUtil.getConnection();
+
+            // Use Database.getConnection()
+            try (Connection conn = Database.getConnection();
                  PreparedStatement ps = conn.prepareStatement("SELECT id, username FROM users WHERE username = ? AND password = ?")) {
                 
                 ps.setString(1, user);
@@ -27,7 +29,6 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response) 
                     HttpSession session = request.getSession();
                     session.setAttribute("userId", rs.getInt("id"));
                     session.setAttribute("username", rs.getString("username"));
-                    
                     response.sendRedirect("tasks");
                 } else {
                     response.sendRedirect("login.jsp?error=invalid");
@@ -36,11 +37,13 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response) 
                 e.printStackTrace();
                 response.sendRedirect("login.jsp?error=db");
             }
+
         } else if ("register".equals(action)) {
              String user = request.getParameter("username");
              String pass = request.getParameter("password");
 
-             try (Connection conn = DBUtil.getConnection();
+             // Use Database.getConnection()
+             try (Connection conn = Database.getConnection();
                   PreparedStatement ps = conn.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)")) {
                  
                  ps.setString(1, user);
@@ -54,7 +57,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response) 
              }
         }
     }
-
+    
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
         if ("logout".equals(action)) {
