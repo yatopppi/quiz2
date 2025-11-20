@@ -4,13 +4,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class Database {  // Class name must be Database
+public class Database {  
 
     public static Connection getConnection() throws SQLException {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            
-            // Check for Railway Cloud Env Variables
             String cloudUrl = System.getenv("MYSQL_URL");
             String cloudUser = System.getenv("MYSQLUSER");
             String cloudPass = System.getenv("MYSQLPASSWORD");

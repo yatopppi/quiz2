@@ -1,6 +1,6 @@
 package com.todo.controller;
 
-import com.todo.util.Database; // <--- UPDATED IMPORT
+import com.todo.util.Database; 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -17,7 +17,6 @@ public class AuthServlet extends HttpServlet {
             String user = request.getParameter("username");
             String pass = request.getParameter("password");
 
-            // Use Database.getConnection()
             try (Connection conn = Database.getConnection();
                  PreparedStatement ps = conn.prepareStatement("SELECT id, username FROM users WHERE username = ? AND password = ?")) {
                 
@@ -42,7 +41,7 @@ public class AuthServlet extends HttpServlet {
              String user = request.getParameter("username");
              String pass = request.getParameter("password");
 
-             // Use Database.getConnection()
+            
              try (Connection conn = Database.getConnection();
                   PreparedStatement ps = conn.prepareStatement("INSERT INTO users (username, password) VALUES (?, ?)")) {
                  

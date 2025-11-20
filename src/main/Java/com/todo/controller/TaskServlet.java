@@ -1,6 +1,6 @@
 package com.todo.controller;
 
-import com.todo.util.Database; // <--- UPDATED IMPORT
+import com.todo.util.Database; 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -29,7 +29,7 @@ public class TaskServlet extends HttpServlet {
         List<Map<String, Object>> tasks = new ArrayList<>();
         List<Map<String, Object>> categories = new ArrayList<>();
 
-        try (Connection conn = Database.getConnection()) { // Use Database.getConnection()
+        try (Connection conn = Database.getConnection()) { 
             
             // Fetch Categories
             try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM categories WHERE user_id = ?")) {
@@ -71,7 +71,7 @@ public class TaskServlet extends HttpServlet {
         request.getRequestDispatcher("dashboard.jsp").forward(request, response);
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession();
         Integer userId = (Integer) session.getAttribute("userId");
         
@@ -85,7 +85,7 @@ public class TaskServlet extends HttpServlet {
         String currentCat = request.getParameter("currentCat");
         if(currentCat != null && !currentCat.isEmpty()) redirectUrl += "?category=" + currentCat;
 
-        try (Connection conn = Database.getConnection()) { // Use Database.getConnection()
+        try (Connection conn = Database.getConnection()) {
             
             if ("add".equals(action)) {
                 String title = request.getParameter("title");
@@ -111,6 +111,16 @@ public class TaskServlet extends HttpServlet {
                 ps.setInt(2, userId);
                 ps.executeUpdate();
 
+            } else if ("editTask".equals(action)) { 
+                // Edit Task Title ---
+                int id = Integer.parseInt(request.getParameter("id"));
+                String title = request.getParameter("title");
+                PreparedStatement ps = conn.prepareStatement("UPDATE tasks SET title = ? WHERE id = ? AND user_id = ?");
+                ps.setString(1, title);
+                ps.setInt(2, id);
+                ps.setInt(3, userId);
+                ps.executeUpdate();
+
             } else if ("addCategory".equals(action)) {
                 String name = request.getParameter("categoryName");
                 PreparedStatement ps = conn.prepareStatement("INSERT INTO categories (name, user_id) VALUES (?, ?)");
@@ -130,6 +140,16 @@ public class TaskServlet extends HttpServlet {
                 del.executeUpdate();
                 redirectUrl = "tasks";
                 
+            } else if ("editCategory".equals(action)) {
+                // Rename Category ---
+                int catId = Integer.parseInt(request.getParameter("id"));
+                String name = request.getParameter("categoryName");
+                PreparedStatement ps = conn.prepareStatement("UPDATE categories SET name = ? WHERE id = ? AND user_id = ?");
+                ps.setString(1, name);
+                ps.setInt(2, catId);
+                ps.setInt(3, userId);
+                ps.executeUpdate();
+
             } else if ("updateCategory".equals(action)) {
                 int id = Integer.parseInt(request.getParameter("id"));
                 String newCatId = request.getParameter("newCategoryId");
